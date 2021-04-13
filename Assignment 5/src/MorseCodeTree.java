@@ -27,7 +27,7 @@ public class MorseCodeTree<T extends String> implements LinkedConverterTreeInter
 
     /**
      * sets the root of the Tree
-     * @param newNode a TreeNode<T> that will be the new root
+     * @param newNode a TreeNode that will be the new root
      */
     @Override
     public void setRoot(TreeNode<T> newNode) {
@@ -38,7 +38,7 @@ public class MorseCodeTree<T extends String> implements LinkedConverterTreeInter
      * Adds result to the correct position in the tree based on the code
      * This method will call the recursive method addNode
      * @param code the code for the new node to be added
-     * @param data
+     * @param data the data to be inserted
      * @return the linkedConverterTree with the new node added
      */
     @Override
@@ -143,7 +143,7 @@ public class MorseCodeTree<T extends String> implements LinkedConverterTreeInter
     }
 
     /**
-     * This method builds the LinkedConverterTree by inserting TreeNodes<T>
+     * This method builds the LinkedConverterTree by inserting TreeNodes
      * into their proper locations
      */
     @Override
@@ -172,7 +172,7 @@ public class MorseCodeTree<T extends String> implements LinkedConverterTreeInter
     }
 
     /**
-     * The recursive method to put the contents of the linked converter tree in an ArrayList<T>
+     * The recursive method to put the contents of the linked converter tree in an ArrayList
      * LNR (Inorder)
      *
      * @param root the root of the tree for this particular recursive instance

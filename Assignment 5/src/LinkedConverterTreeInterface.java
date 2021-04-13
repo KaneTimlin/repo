@@ -24,7 +24,7 @@ public interface LinkedConverterTreeInterface<T> {
 	
 	/**
 	 * sets the root of the Tree
-	 * @param newNode a TreeNode<T> that will be the new root
+	 * @param newNode a TreeNode that will be the new root
 	 */
 	public void setRoot(TreeNode<T> newNode);
 	
@@ -35,9 +35,10 @@ public interface LinkedConverterTreeInterface<T> {
 	 * This method will call the recursive method addNode
 	 * 
 	 * @param code the code for the new node to be added
+	 * @param data the data to be added
 	 * @return the linkedConverterTree with the new node added
 	 */
-	public LinkedConverterTreeInterface<T> insert(T code, T result);
+	public LinkedConverterTreeInterface<T> insert(T code, T data);
 		
 	
 	/**
@@ -78,7 +79,7 @@ public interface LinkedConverterTreeInterface<T> {
 	 * This operation is not supported for a LinkedConverterTree
 	 * @param data data of node to be deleted
 	 * @return reference to the current tree
-	 * @throws UnsupportedOperationException
+	 * @throws UnsupportedOperationException this operation is not supported
 	 */
 	public LinkedConverterTreeInterface<T> delete(T data) throws UnsupportedOperationException;
 		
@@ -87,13 +88,13 @@ public interface LinkedConverterTreeInterface<T> {
 	/**
 	 * This operation is not supported for a LinkedConverterTree
 	 * @return reference to the current tree
-	 * @throws UnsupportedOperationException
+	 * @throws UnsupportedOperationException this operation is not supported
 	 */
 	public LinkedConverterTreeInterface<T> update() throws UnsupportedOperationException;
 		
 
 	/**
-	 * This method builds the LinkedConverterTree by inserting TreeNodes<T>
+	 * This method builds the LinkedConverterTree by inserting TreeNodes
 	 * into their proper locations
 	 * 
 	 */
@@ -110,7 +111,7 @@ public interface LinkedConverterTreeInterface<T> {
 	
 	
 	/**
-	 * The recursive method to put the contents of the linked converter tree in an ArrayList<T> 
+	 * The recursive method to put the contents of the linked converter tree in an ArrayList
 	 * LNR (Inorder)
 	 * @param root the root of the tree for this particular recursive instance
 	 * @param list the ArrayList that will hold the contents of the tree in LNR order
