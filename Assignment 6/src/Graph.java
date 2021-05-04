@@ -1,7 +1,11 @@
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.Set;
+import org.jetbrains.annotations.NotNull;
+import org.junit.internal.InexactComparisonCriteria;
 
+import java.util.*;
+
+/**
+ * @author Kane Timlin
+ */
 public class Graph implements GraphInterface<Town, Road>{
 
     private final int INITIAL_SIZE = 53;
@@ -9,9 +13,19 @@ public class Graph implements GraphInterface<Town, Road>{
     private Town[] towns;
     private LinkedList<Road>[] roads;
 
+    PriorityQueue<Integer> queue;
+    int[] weights;
+    Town[] previousTowns;
+
     public Graph() {
         towns = new Town[INITIAL_SIZE];
         roads = new LinkedList[INITIAL_SIZE];
+
+        weights = new int[INITIAL_SIZE];
+        previousTowns = new Town[INITIAL_SIZE];
+
+        queue = new PriorityQueue<>(11, new CompareByWeight());
+
     }
 
     /**
@@ -29,6 +43,16 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public Road getEdge(Town sourceVertex, Town destinationVertex) {
+        int index = getTownIndex(sourceVertex);
+        if (index == -1 || index == -2 || destinationVertex == null || destinationVertex.isEmpty()) {
+            return null;
+        }
+        LinkedList<Road> roadsOfTown = roads[index];
+        for (Road road : roadsOfTown) {
+            if (road.getDestination().equals(destinationVertex)) {
+                return new Road(road);
+            }
+        }
         return null;
     }
 
@@ -51,7 +75,39 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public Road addEdge(Town sourceVertex, Town destinationVertex, int weight, String description) {
-        return null;
+        int index = getTownIndex(sourceVertex);
+        if (index == -1 || destinationVertex == null || destinationVertex.isEmpty()) {
+            throw new NullPointerException();
+        }
+        if (index == -2) {
+            throw new IllegalArgumentException();
+        }
+        Road newRoad = new Road(sourceVertex, destinationVertex, weight, description);
+        Town adjacentTown = towns[index];
+        adjacentTown.addAdjacentTown(destinationVertex);
+
+        LinkedList<Road> roadsOfTown = roads[index];
+        if (roadsOfTown == null) {
+            roadsOfTown = new LinkedList<>();
+            roads[index] = roadsOfTown;
+        }
+        roadsOfTown.add(newRoad);
+
+        index = getTownIndex(destinationVertex);
+        if (index == -1 || index == -2) {
+            return null;
+        }
+        roadsOfTown = roads[index];
+        newRoad = new Road(destinationVertex, sourceVertex, weight, description);
+        adjacentTown = towns[index];
+        adjacentTown.addAdjacentTown(sourceVertex);
+        if (roadsOfTown == null) {
+            roadsOfTown = new LinkedList<>();
+            roads[index] = roadsOfTown;
+        }
+        roadsOfTown.add(newRoad);
+
+        return newRoad;
     }
 
     /**
@@ -70,7 +126,15 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public boolean addVertex(Town town) {
-        return false;
+        int index = getNewTownIndex(town);
+        if (index == -1) {
+            throw new NullPointerException();
+        } else if (index == -2) {
+            return false;
+        }
+        towns[index] = town;
+        return true;
+
     }
 
     /**
@@ -86,7 +150,29 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public boolean containsEdge(Town sourceVertex, Town destinationVertex) {
-        return false;
+        boolean containsEdge = false;
+        int index = getTownIndex(sourceVertex);
+        if (index == -1 || index == -2 || destinationVertex == null || destinationVertex.isEmpty()) {
+            return false;
+        }
+        LinkedList<Road> roadsOfTown = roads[index]; // check one way
+        for (Road road : roadsOfTown) {
+            if (road.getDestination().equals(destinationVertex)) {
+                containsEdge = true;
+            }
+        }
+
+        index = getTownIndex(destinationVertex); // check the other way
+        if (index == -2) {
+            return false;
+        }
+        roadsOfTown = roads[index];
+        for (Road road : roadsOfTown) {
+            if (road.getDestination().equals(sourceVertex)) {
+                containsEdge = true;
+            }
+        }
+        return containsEdge;
     }
 
     /**
@@ -100,7 +186,8 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public boolean containsVertex(Town town) {
-        return false;
+        int index = getTownIndex(town);
+        return !(index == -1 || index == -2);
     }
 
     /**
@@ -113,7 +200,13 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public Set<Road> edgeSet() {
-        return null;
+        Set<Road> outputSet = new TreeSet<>();
+        for (int i = 0; i < INITIAL_SIZE; i++) {
+            if (towns[i] != null) {
+                outputSet.addAll(edgesOf(towns[i]));
+            }
+        }
+        return outputSet;
     }
 
     /**
@@ -129,7 +222,16 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public Set<Road> edgesOf(Town vertex) {
-        return null;
+        int index = getTownIndex(vertex);
+        if (index == -1) {
+            throw new NullPointerException();
+        } else if (index == -2) {
+            throw new IllegalArgumentException();
+        }
+        if (roads[index] == null) {
+            return new HashSet<>();
+        }
+        return new HashSet<>(roads[index]);
     }
 
     /**
@@ -150,7 +252,47 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public Road removeEdge(Town sourceVertex, Town destinationVertex, int weight, String description) {
-        return null;
+        int index = getTownIndex(sourceVertex);
+        if (index == -1 || index == -2 || destinationVertex == null || destinationVertex.isEmpty()) {
+            return null;
+        }
+        LinkedList<Road> listOfRoads = roads[index];
+        Road roadToRemove = new Road();
+        towns[index].removeAdjacentTown(destinationVertex);
+
+        for (Road road : listOfRoads) {
+            if (destinationVertex.equals(road.getDestination())) {
+                if (weight > 1 && description != null) {
+                    if (weight == road.getWeight() && description.equals(road.getName())) {
+                        roadToRemove = road;
+                    }
+                } else if (weight > 1) {
+                    if (weight == road.getWeight()) {
+                        roadToRemove = road;
+                    }
+                } else if (description != null) {
+                    if (description.equals(road.getName())) {
+                        roadToRemove = road;
+                    }
+                } else {
+                    roadToRemove = road;
+                }
+                break;
+            }
+        }
+        if (roadToRemove.isEmpty()) {
+            return null;
+        }
+        listOfRoads.remove(roadToRemove);
+
+        index = getTownIndex(destinationVertex);
+        if (index == -2) {
+            return null;
+        }
+        listOfRoads = roads[index];
+        listOfRoads.remove(roadToRemove);
+        towns[index].removeAdjacentTown(sourceVertex);
+        return new Road(roadToRemove);
     }
 
     /**
@@ -170,7 +312,16 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public boolean removeVertex(Town town) {
-        return false;
+        int index = getTownIndex(town);
+        if (index == -1 || index == -2) {
+            return false;
+        }
+        LinkedList<Road> listOfRoads = new LinkedList<>(roads[index]);
+        for (Road road : listOfRoads) {
+            removeEdge(road.getSource(), road.getDestination(), road.getWeight(), road.getName());
+        }
+        towns[index] = new Town();
+        return true;
     }
 
     /**
@@ -183,7 +334,13 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public Set<Town> vertexSet() {
-        return null;
+        HashSet<Town> townSet = new HashSet<>();
+        for (int i = 0; i < INITIAL_SIZE; i++) {
+            if (towns[i] != null) {
+                townSet.add(towns[i]);
+            }
+        }
+        return townSet;
     }
 
     /**
@@ -203,7 +360,36 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public ArrayList<String> shortestPath(Town sourceVertex, Town destinationVertex) {
-        return null;
+        weights = new int[INITIAL_SIZE];
+        previousTowns = new Town[INITIAL_SIZE];
+        queue.clear();
+
+        dijkstraShortestPath(sourceVertex);
+
+        ArrayList<String> directions = new ArrayList<>();
+        int index = getTownIndex(destinationVertex);
+        Town currentTown, previousTown;
+
+        do {
+            currentTown = towns[index];
+            previousTown = previousTowns[index];
+            Road roadBetween = getEdge(currentTown, previousTown);
+            if (roadBetween == null || roadBetween.isEmpty()) {
+                return new ArrayList<>();
+            }
+            directions.add(previousTown + " via " + roadBetween + " to " + currentTown + " " + roadBetween.getWeight() + " mi");
+            currentTown = previousTown;
+            index = getTownIndex(currentTown);
+        }
+        while (!previousTown.equals(sourceVertex));
+
+        ArrayList<String> output = new ArrayList<>();
+
+        for (int i = directions.size() - 1; i >= 0; i--) {
+            output.add(directions.get(i));
+        }
+
+        return output;
     }
 
     /**
@@ -215,17 +401,117 @@ public class Graph implements GraphInterface<Town, Road>{
      */
     @Override
     public void dijkstraShortestPath(Town sourceVertex) {
+        int srcIndex = getTownIndex(sourceVertex);
+        weights[srcIndex] = 0;
+        previousTowns[srcIndex] = sourceVertex;
+        queue.add(srcIndex);
 
+        Set<Town> visited = new HashSet<>();
+        int numVertices = vertexSet().size();
+
+        Town currentTown;
+        Town nextTown;
+        Town visitNext;
+        int index;
+        int nextIndex;
+        int visitNextIndex;
+        LinkedList<Road> listOfRoads;
+        int newWeight;
+        int visitNextWeight;
+
+        while (visited.size() != numVertices && !queue.isEmpty()) {
+            index = queue.poll();
+            currentTown = towns[index];
+            listOfRoads = roads[index];
+            for (Road road : listOfRoads) {
+                nextTown = road.getDestination();
+                if (!visited.contains(currentTown)) {
+                    nextIndex = getTownIndex(nextTown);
+                    newWeight = road.getWeight() + weights[index];
+                    if (weights[nextIndex] == 0 || newWeight < weights[nextIndex]) {
+                        weights[nextIndex] = newWeight;
+                        previousTowns[nextIndex] = currentTown;
+                    }
+                    queue.add(nextIndex);
+                }
+            }
+            visited.add(currentTown);
+        }
     }
 
+    /**
+     * A method to get the index of a town that has already been placed into the array
+     * Returns -1 if the given town is null or empty, and -2 if the town is not found
+     * @param town the town to find
+     * @return the index of the town, if it is present
+     */
     public int getTownIndex(Town town) {
-        int ip = town.hashCode() % INITIAL_SIZE;
-        int q = town.hashCode() / INITIAL_SIZE;
+        if (town == null || town.isEmpty()) {
+            return -1;
+        }
+        int ip = Math.abs(town.hashCode() % INITIAL_SIZE);
+        int q = Math.abs(town.hashCode() / INITIAL_SIZE);
         int offset;
         if (q % INITIAL_SIZE != 0) {
             offset = q;
+        } else {
+            offset = 19;
         }
+        while (towns[ip] != null) {
+            if (towns[ip].equals(town)) {
+                return ip;
+            }
+            ip = (ip + offset) % INITIAL_SIZE;
 
+        }
+        return -2; // return if town not found in array
+    }
+
+    /**
+     * A method to find an empty index to place a town in.
+     * Returns -1 if town is null or empty, -2 if a duplicate is found
+     * @param town the town to find a spot for
+     * @return the index of the town, if a spot is available
+     */
+    public int getNewTownIndex(Town town) {
+        if (town == null || town.isEmpty()) {
+            return -1;
+        }
+        int ip = Math.abs(town.hashCode() % INITIAL_SIZE);
+        int q = Math.abs(town.hashCode() / INITIAL_SIZE);
+        int offset;
+        if (q % INITIAL_SIZE != 0) {
+            offset = q;
+        } else {
+            offset = 19;
+        }
+        int index = 0;
+        boolean useIndex = false;
+        while (towns[ip] != null) {
+            if (towns[ip].equals(town)) { // check for duplicates
+                return -2;
+            }
+            if (!useIndex && towns[ip].isEmpty()) { // check for empty spots in the array that are not null
+                useIndex = true; // can only be run once
+                index = ip;
+            }
+            ip = (ip + offset) % INITIAL_SIZE;
+        }
+        return useIndex ? index : ip;
+    }
+
+    /**
+     * @author Kane Timlin
+     * A class that provides a way to compare and sort towns by their relative distance from the starting vertex
+     * Used as a comparator in dijkstra's shortest path algorithm
+     * to find the index with the shortest distance from the starting vertex
+     */
+    private class CompareByWeight implements Comparator<Integer>{
+
+        @Override
+        public int compare(Integer o1, Integer o2) {
+            return Integer.compare(weights[o1], weights[o2]);
+        }
     }
 
 }
