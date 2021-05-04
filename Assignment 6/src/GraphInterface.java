@@ -10,7 +10,7 @@ import java.util.*;
  * E of edges. Each edge e=(v1,v2) in E connects vertex v1 to vertex v2.
  *
  * Through generics, a graph can be typed to specific classes for vertices
- * V and edges E<T>. Such a graph can contain
+ * V and edges E. Such a graph can contain
  * vertices of type V and all sub-types and Edges of type
  * E and all sub-types.
  */
@@ -132,7 +132,7 @@ public interface GraphInterface<V, E>
      * Removes an edge going from source vertex to target vertex, if such
      * vertices and such edge exist in this graph. 
      * 
-     * If weight >- 1 it must be checked
+     * If weight >= 1 it must be checked
      * If description != null, it must be checked 
      * 
      * Returns the edge if removed
@@ -186,7 +186,7 @@ public interface GraphInterface<V, E>
      * @return An arraylist of Strings that describe the path from sourceVertex
      * to destinationVertex
      * They will be in the format: startVertex "via" Edge "to" endVertex weight
-	 * As an example: if finding path from Vertex_1 to Vertex_10, the ArrayList<String>
+	 * As an example: if finding path from Vertex_1 to Vertex_10, the ArrayList
 	 * would be in the following format(this is a hypothetical solution):
 	 * Vertex_1 via Edge_2 to Vertex_3 4 (first string in ArrayList)
 	 * Vertex_3 via Edge_5 to Vertex_8 2 (second string in ArrayList)

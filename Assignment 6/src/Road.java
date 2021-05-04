@@ -61,7 +61,7 @@ public class Road implements Comparable<Road> {
     /**
      * A method that compares two roads based on their names
      * @param o the road to compare against
-     * @return
+     * @return -1 if current name is less, 0 if equal, 1 if more
      */
     @Override
     public int compareTo(Road o) {

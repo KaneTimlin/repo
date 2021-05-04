@@ -8,7 +8,6 @@ public class DriverFX extends Application {
 	/**
 	 * The main method for the GUI JavaFX version
 	 * @param args not used
-	 * @throws IOException
 	 */
 	public static void main(String[] args) {
 		launch(args);   

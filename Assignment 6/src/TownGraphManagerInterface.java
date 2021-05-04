@@ -7,6 +7,7 @@ public interface TownGraphManagerInterface {
 	 * Adds a road with 2 towns and a road name
 	 * @param town1 name of town 1 (lastname, firstname)
 	 * @param town2 name of town 2 (lastname, firstname)
+	 * @param weight length of road
 	 * @param roadName name of road
 	 * @return true if the road was added successfully
 	 */

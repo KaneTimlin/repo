@@ -238,7 +238,7 @@ public class Graph implements GraphInterface<Town, Road>{
      * Removes an edge going from source vertex to target vertex, if such
      * vertices and such edge exist in this graph.
      * <p>
-     * If weight >- 1 it must be checked
+     * If weight >= 1 it must be checked
      * If description != null, it must be checked
      * <p>
      * Returns the edge if removed
@@ -352,7 +352,7 @@ public class Graph implements GraphInterface<Town, Road>{
      * @return An arraylist of Strings that describe the path from sourceVertex
      * to destinationVertex
      * They will be in the format: startVertex "via" Edge "to" endVertex weight
-     * As an example: if finding path from Vertex_1 to Vertex_10, the ArrayList<String>
+     * As an example: if finding path from Vertex_1 to Vertex_10, the ArrayList
      * would be in the following format(this is a hypothetical solution):
      * Vertex_1 via Edge_2 to Vertex_3 4 (first string in ArrayList)
      * Vertex_3 via Edge_5 to Vertex_8 2 (second string in ArrayList)
